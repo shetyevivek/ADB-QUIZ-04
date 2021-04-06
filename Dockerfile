@@ -119,11 +119,11 @@ ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_
 ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -pie"
 
-ENV GPG_KEYS CBAF69F173A0FEA4B537F470D66C9593118BCCB6 F38252826ACD957EF380D39F2F7956BC5DA04B5D
+ENV GPG_KEYS 1729F83938DA44E27BA0F4D3DBDB397470D12172 BFDDD28642824F8118EF77909B67A5C12229118F
 
-ENV PHP_VERSION 7.3.27
-ENV PHP_URL="https://www.php.net/distributions/php-7.3.27.tar.xz" PHP_ASC_URL="https://www.php.net/distributions/php-7.3.27.tar.xz.asc"
-ENV PHP_SHA256="65f616e2d5b6faacedf62830fa047951b0136d5da34ae59e6744cbaf5dca148d"
+ENV PHP_VERSION 8.0.3
+ENV PHP_URL="https://www.php.net/distributions/php-8.0.3.tar.xz" PHP_ASC_URL="https://www.php.net/distributions/php-8.0.3.tar.xz.asc"
+ENV PHP_SHA256="c9816aa9745a9695672951eaff3a35ca5eddcb9cacf87a4f04b9fb1169010251"
 
 RUN set -eux; \
 	\
@@ -166,6 +166,7 @@ RUN set -eux; \
 		libargon2-dev \
 		libcurl4-openssl-dev \
 		libedit-dev \
+		libonig-dev \
 		libsodium-dev \
 		libsqlite3-dev \
 		libssl-dev \
@@ -221,6 +222,9 @@ RUN set -eux; \
 		--with-openssl \
 		--with-zlib \
 		\
+# in PHP 7.4+, the pecl/pear installers are officially deprecated (requiring an explicit "--with-pear")
+		--with-pear \
+		\
 # bundled pcre does not support JIT on s390x
 # https://manpages.debian.org/stretch/libpcre3-dev/pcrejit.3.en.html#AVAILABILITY_OF_JIT_SUPPORT
 		$(test "$gnuArch" = 's390x-linux-gnu' && echo '--without-pcre-jit') \
@@ -264,9 +268,6 @@ COPY docker-php-ext-* docker-php-entrypoint /usr/local/bin/
 
 # sodium was built as a shared module (so that it can be replaced later if so desired), so let's enable it too (https://github.com/docker-library/php/issues/598)
 RUN docker-php-ext-enable sodium
-
-# temporary "freetype-config" workaround for https://github.com/docker-library/php/issues/865 (https://bugs.php.net/bug.php?id=76324)
-RUN { echo '#!/bin/sh'; echo 'exec pkg-config "$@" freetype2'; } > /usr/local/bin/freetype-config && chmod +x /usr/local/bin/freetype-config
 
 ENTRYPOINT ["docker-php-entrypoint"]
 # https://httpd.apache.org/docs/2.4/stopping.html#gracefulstop
