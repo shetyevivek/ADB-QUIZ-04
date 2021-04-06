@@ -21,7 +21,7 @@ $result = mysqli_query($con, $sql) or die('Error ' . mysqli_error($con));
 
 while ($row = mysqli_fetch_array($result))
 {
-    echo '<img src="data:image/jpeg;base64,'.base64_encode($row['Photo']).'"/>';
+    echo '<img src="data:image/jpeg;base64,'.base64_encode($row['Photo']).'" width="300px"; height="300px"; />';
     echo '<br>';
     echo "Name: " .$row['Name'];
     echo '<br>';
